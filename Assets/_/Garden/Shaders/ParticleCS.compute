@@ -1,0 +1,32 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct changes{
+    float x, y, change, r, g, b;
+};
+
+RWTexture2D<float4> InputTXT;
+RWTexture2D<float4> GrassTXT;
+RWTexture2D<float4> LastInputTXT;
+RWStructuredBuffer<changes> results;
+float width;
+float txtW;
+float txtH;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int idx = id.x * width + id.y;
+
+    int gidxX = id.x / width * txtW;
+    int gidxY = id.y / width * txtH;
+    int2 gidx = int2(gidxX, gidxY);
+    
+    results[idx].r = GrassTXT[gidx].x;
+    results[idx].g = GrassTXT[gidx].y;
+    results[idx].b = GrassTXT[gidx].z;
+
+    results[idx].x = id.x;
+    results[idx].y = id.y;
+    results[idx].change = InputTXT[id.xy].x - LastInputTXT[id.xy].x;    
+}

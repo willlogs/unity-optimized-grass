@@ -1,0 +1,51 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct data{
+    float3x3 rot;
+    float3 mp;
+    float shoudlDie, shouldRot;
+};
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<data> myData;
+float3 tp;
+float desMag;
+
+float2 GetUV (uint3 id) {
+	return (id.xy + 0.5) * 8 - 1.0;
+}
+
+[numthreads(4,4,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int index = id.x * 8 + id.y;
+
+    float3 look = tp - myData[index].mp;
+    float mag = sqrt(pow(look.x, 2) + pow(look.y, 2) + pow(look.z, 2));
+
+    if(mag < desMag){
+        myData[index].shoudlDie = 1;
+    }
+
+    if(mag < 10){
+        float3 axis = cross(normalize(look), float3(0, 1, 0));
+        float angle = (10 - mag) / 10;
+        angle = pow(angle, 2);
+        
+        myData[index].shouldRot = 1;
+        float c, s;
+        sincos(angle, s, c);
+
+        float t = 1 - c;
+        float x = axis.x;
+        float y = axis.y;
+        float z = axis.z;
+
+        myData[index].rot = float3x3(
+            t * x * x + c,      t * x * y - s * z,  t * x * z + s * y,
+            t * x * y + s * z,  t * y * y + c,      t * y * z - s * x,
+            t * x * z - s * y,  t * y * z + s * x,  t * z * z + c
+        );
+    }
+}
