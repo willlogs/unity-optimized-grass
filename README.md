@@ -1,5 +1,8 @@
 # unity-optimized-grass
 Optimized 3D grass for unity that works on Mobile. OpenGL 3.5+
+
+## How to use
+There's a demo scene in the assets. Run it and click on the screen. Open up an issue if there's anything wrong.
 <hr></br>
 
 
